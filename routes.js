@@ -11,11 +11,11 @@ module.exports = (app, myDataBase) => {
           showSocialAuth: true
         });
     });
-    app.route('/login').post(passport.authenticate('local', {failureRedirect: '/'})).get((req, res) => {
+    app.route('/login').post(passport.authenticate('local', {failureRedirect: '/'}), (req, res) => {
         res.redirect('/profile');
     });
     app.route('/profile').get(ensureAuthenticated, (req, res) => {
-        res.render(__dirname + "/views/pug/profile", {username: req.user.username});
+        res.render('pug/profile', {username: req.user.username});
     });
     app.route('/logout').get((req, res) => {
         req.logout();
@@ -25,22 +25,19 @@ module.exports = (app, myDataBase) => {
     .post((req, res, next) => {
         const hash = bcrypt.hashSync(req.body.password, 12);
         myDataBase.findOne({username: req.body.username}, (err, user) => {
-        if (err) {
-            next(err);
-        } else if (user) {
-            res.redirect('/');
-        } else {
-            myDataBase.insertOne({
-            username: req.body.username,
-            password: hash
-            }, (err, doc) => {
             if (err) {
+                next(err);
+            } else if (user) {
                 res.redirect('/');
             } else {
-                next(null, doc.ops[0]);
+                myDataBase.insertOne({username: req.body.username, password: hash}, (err, doc) => {
+                    if (err) {
+                        res.redirect('/');
+                    } else {
+                        next(null, doc.ops[0]);
+                    }
+                });
             }
-            })
-        }
         })
     },
     passport.authenticate('local', {failureRedirect: '/'}),

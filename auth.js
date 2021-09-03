@@ -10,6 +10,7 @@ module.exports = (app, myDataBase) => {
     });
     passport.deserializeUser((id, done) => {
         myDataBase.findOne({_id: new ObjectID(id)}, (err, doc) => {
+            if (err) return console.error(err);
             done(null, doc);
         });
     });
@@ -34,30 +35,30 @@ module.exports = (app, myDataBase) => {
         clientSecret: process.env.GITHUB_CLIENT_SECRET,
         callbackURL: 'https://young-lake-39153.herokuapp.com/auth/github/callback'
     }), (accessToken, refreshToken, profile, cb) => {
-        myDataBase.findOneAndUpdate(
-            { id: profile.id },
-            {
-              $setOnInsert: {
-                id: profile.id,
-                name: profile.displayName || 'John Doe',
-                photo: profile.photos[0].value || '',
-                email: Array.isArray(profile.emails)
-                  ? profile.emails[0].value
-                  : 'No public email',
-                created_on: new Date(),
-                provider: profile.provider || ''
-              },
-              $set: {
-                last_login: new Date()
-              },
-              $inc: {
-                login_count: 1
-              }
-            },
-            { upsert: true, new: true },
-            (err, doc) => {
-              return cb(null, doc.value);
-            }
-        );
-    });
+            myDataBase.findOneAndUpdate(
+                { id: profile.id },
+                {
+                $setOnInsert: {
+                    id: profile.id,
+                    name: profile.displayName || 'John Doe',
+                    photo: profile.photos[0].value || '',
+                    email: Array.isArray(profile.emails)
+                    ? profile.emails[0].value
+                    : 'No public email',
+                    created_on: new Date(),
+                    provider: profile.provider || ''
+                },
+                $set: {
+                    last_login: new Date()
+                },
+                $inc: {
+                    login_count: 1
+                }
+                },
+                { upsert: true, new: true },
+                (err, doc) => {
+                return cb(null, doc.value);
+                }
+            );
+        });
 }
