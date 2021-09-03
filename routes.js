@@ -7,51 +7,57 @@ module.exports = (app, myDataBase) => {
           title: "Connected to Database", 
           message: "Please login",
           showLogin: true,
-          showRegistration: true
+          showRegistration: true,
+          showSocialAuth: true
         });
-      })
-      app.route('/login').post(passport.authenticate('local', {failureRedirect: '/'})).get((req, res) => {
+    });
+    app.route('/login').post(passport.authenticate('local', {failureRedirect: '/'})).get((req, res) => {
         res.redirect('/profile');
-      });
-      app.route('/profile').get(ensureAuthenticated, (req, res) => {
+    });
+    app.route('/profile').get(ensureAuthenticated, (req, res) => {
         res.render(__dirname + "/views/pug/profile", {username: req.user.username});
-      });
-      app.route('/logout').get((req, res) => {
+    });
+    app.route('/logout').get((req, res) => {
         req.logout();
         res.redirect('/');
-      });
-      app.route('/register')
-        .post((req, res, next) => {
-          const hash = bcrypt.hashSync(req.body.password, 12);
-          myDataBase.findOne({username: req.body.username}, (err, user) => {
+    });
+    app.route('/register')
+    .post((req, res, next) => {
+        const hash = bcrypt.hashSync(req.body.password, 12);
+        myDataBase.findOne({username: req.body.username}, (err, user) => {
+        if (err) {
+            next(err);
+        } else if (user) {
+            res.redirect('/');
+        } else {
+            myDataBase.insertOne({
+            username: req.body.username,
+            password: hash
+            }, (err, doc) => {
             if (err) {
-              next(err);
-            } else if (user) {
-              res.redirect('/');
+                res.redirect('/');
             } else {
-              myDataBase.insertOne({
-                username: req.body.username,
-                password: hash
-              }, (err, doc) => {
-                if (err) {
-                  res.redirect('/');
-                } else {
-                  next(null, doc.ops[0]);
-                }
-              })
+                next(null, doc.ops[0]);
             }
-          })
-        },
-          passport.authenticate('local', {failureRedirect: '/'}),
-          (req, res, next) => {
+            })
+        }
+        })
+    },
+    passport.authenticate('local', {failureRedirect: '/'}),
+        (req, res, next) => {
             res.redirect('/profile');
-          }
-        )
-      app.use((req, res, next) => {
+        }
+    )
+    app.use((req, res, next) => {
         res.status(404)
-          .type('text')
-          .send('Not Found');
-      });
+            .type('text')
+            .send('Not Found');
+    });
+    app.route('/auth/github').get(passport.authenticate('github'));
+    app.route('/auth/github/callback')
+        .get(passport.authenticate('github', { failureRedirect: '/' }), (req, res) => {
+            res.redirect('/profile');
+        });
 };
 const ensureAuthenticated = (req, res, next) => {
     if (req.isAuthenticated()) {
