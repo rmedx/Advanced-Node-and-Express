@@ -1,3 +1,4 @@
+require('dotenv').config();
 const LocalStrategy = require('passport-local');
 const passport = require('passport');
 const bcrypt = require('bcrypt');
