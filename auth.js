@@ -34,7 +34,7 @@ module.exports = (app, myDataBase) => {
     passport.use(new GitHubStrategy({
             clientID: process.env.GITHUB_CLIENT_ID, 
             clientSecret: process.env.GITHUB_CLIENT_SECRET, 
-            callbackURL: process.cwd() + '/auth/github/callback'
+            callbackURL: 'https://young-lake-39153.herokuapp.com/auth/github/callback'
         }, (accessToken, refreshToken, profile, cb) => {
             myDataBase.findOneAndUpdate(
                 { id: profile.id },
