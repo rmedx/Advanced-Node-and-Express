@@ -50,11 +50,10 @@ module.exports = (app, myDataBase) => {
             .type('text')
             .send('Not Found');
     });
-    app.route('/auth/github').get(passport.authenticate('github'));
-    app.route('/auth/github/callback')
-        .get(passport.authenticate('github', { failureRedirect: '/' }), (req, res) => {
-            res.redirect('/profile');
-        });
+    app.route('/auth/github').get(passport.authenticate("github"));
+    app.route('/auth/github/callback').get(passport.authenticate('github', { failureRedirect: '/' }), (req, res) => {
+        res.redirect('/profile');
+    });
 };
 const ensureAuthenticated = (req, res, next) => {
     if (req.isAuthenticated()) {
