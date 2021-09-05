@@ -26,11 +26,11 @@ app.use(session({
 app.use(passport.initialize());
 app.use(passport.session());
 
-myDB(async client => {
+myDB(async (client) => {
   const myDataBase = await client.db('database').collection('users');
   routes(app, myDataBase);
   auth(app, myDataBase);
-}).catch(e => {
+}).catch((e) => {
   app.route('/').get((req, res) => {
     res.render('pug', {
       title: e, 
