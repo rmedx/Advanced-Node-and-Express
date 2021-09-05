@@ -24,7 +24,7 @@ module.exports = (app, myDataBase) => {
     app.route('/register').post(
         (req, res, next) => {
             const hash = bcrypt.hashSync(req.body.password, 12);
-            myDataBase.findOne({username: req.body.username}, (err, user) => {
+            myDataBase.findOrCreate({username: req.body.username}, (err, user) => {
                 if (err) {
                     next(err);
                 } else if (user) {
@@ -50,8 +50,8 @@ module.exports = (app, myDataBase) => {
             .type('text')
             .send('Not Found');
     });
-    app.route('/auth/github').get(passport.authenticate("github"));
-    app.route('/auth/github/callback').get(passport.authenticate('github', { failureRedirect: '/' }), (req, res) => {
+    app.get('/auth/github', passport.authenticate("github"));
+    app.get('/auth/github/callback', passport.authenticate('github', { failureRedirect: '/' }), (req, res) => {
         res.redirect('/profile');
     });
 };
