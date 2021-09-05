@@ -36,7 +36,7 @@ module.exports = (app, myDataBase) => {
             clientSecret: process.env.GITHUB_CLIENT_SECRET, 
             callbackURL: 'https://young-lake-39153.herokuapp.com/auth/github/callback'
         }, 
-        (accessToken, refreshToken, profile, cb) => {
+        function(accessToken, refreshToken, profile, cb) {
             myDataBase.findOneAndUpdate(
                 { id: profile.id },
                 {
