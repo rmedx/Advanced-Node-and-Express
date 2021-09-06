@@ -1,4 +1,3 @@
-require('dotenv').config();
 const passport = require('passport');
 const LocalStrategy = require('passport-local');
 const bcrypt = require('bcrypt');
@@ -16,8 +15,7 @@ module.exports = function (app, myDataBase) {
         });
     });
     passport.use(new LocalStrategy(
-        (username, password, done) => {
-            console.log(username);
+        function (username, password, done) {
             myDataBase.findOne({username: username}, (err, user) => {
             if (err) {
                 return done(err);
@@ -37,17 +35,15 @@ module.exports = function (app, myDataBase) {
             clientSecret: process.env.GITHUB_CLIENT_SECRET, 
             callbackURL: 'https://young-lake-39153.herokuapp.com/auth/github/callback'
         }, 
-        function(accessToken, refreshToken, profile, cb) {
-            myDataBase.findOneAndUpdate(
+        function (accessToken, refreshToken, profile, cb) {
+            myDataBase.findAndModify(
                 { id: profile.id },
                 {
                     $setOnInsert: {
                         id: profile.id,
                         name: profile.displayName || 'John Doe',
                         photo: profile.photos[0].value || '',
-                        email: Array.isArray(profile.emails)
-                        ? profile.emails[0].value
-                        : 'No public email',
+                        email: Array.isArray(profile.emails) ? profile.emails[0].value : 'No public email',
                         created_on: new Date(),
                         provider: profile.provider || ''
                     },

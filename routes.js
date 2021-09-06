@@ -3,13 +3,7 @@ const bcrypt = require('bcrypt');
 
 module.exports = function (app, myDataBase) {
     app.route('/').get((req, res) => {
-        res.render('pug', {
-          title: "Connected to Database", 
-          message: "Please login",
-          showLogin: true,
-          showRegistration: true,
-          showSocialAuth: true
-        });
+        res.render('pug', {title: "Connected to Database", message: "Please login", showLogin: true, showRegistration: true, showSocialAuth: true});
     });
     app.route('/login').post(passport.authenticate('local', {failureRedirect: '/'}), (req, res) => {
         res.redirect('/profile');
@@ -24,7 +18,7 @@ module.exports = function (app, myDataBase) {
     app.route('/register').post(
         (req, res, next) => {
             const hash = bcrypt.hashSync(req.body.password, 12);
-            myDataBase.findOne({username: req.body.username}, (err, user) => {
+            myDataBase.findOne({username: req.body.username}, function (err, user) {
                 if (err) {
                     next(err);
                 } else if (user) {
@@ -45,21 +39,17 @@ module.exports = function (app, myDataBase) {
             res.redirect('/profile');
         }
     );
+    app.route('/auth/github').get(passport.authenticate('github'));
+    app.route('/auth/github/callback').get(passport.authenticate('github', { failureRedirect: '/' }), (req, res) => {
+        res.redirect('/profile');
+    });
     app.use((req, res, next) => {
         res.status(404)
             .type('text')
             .send('Not Found');
     });
-    app.get('/auth/github', passport.authenticate('github', { scope: [ 'user:email' ] }));
-    app.get('/auth/github/callback', passport.authenticate('github', { failureRedirect: '/' }), function(req, res) {
-        res.redirect('/profile');
-    });
-    // app.get('/auth/github', passport.authenticate("github"));
-    // app.get('/auth/github/callback', passport.authenticate('github', { failureRedirect: '/' }), (req, res) => {
-    //     res.redirect('/profile');
-    // });
 };
-const ensureAuthenticated = (req, res, next) => {
+function ensureAuthenticated(req, res, next) {
     if (req.isAuthenticated()) {
       return next();
     }
