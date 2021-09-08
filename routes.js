@@ -36,7 +36,7 @@ module.exports = function (app, myDataBase) {
         },
         passport.authenticate('local', {failureRedirect: '/'}),
         (req, res, next) => {
-            res.redirect('pug/profile');
+            res.redirect('/profile');
         }
     );
     app.route('/auth/github').get(passport.authenticate('github'));
