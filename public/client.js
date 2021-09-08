@@ -8,7 +8,9 @@ $(document).ready(function () {
     $('#messages').append($('<li>').html('<b>' + message + '/b>')); 
   });
   socket.on('chat message', (data) => {
-    $('messages').append($('<li>').html(data.username + ": " + data.message));
+    console.log('socket.on 1');
+    let finalMessage = data.username + ": " + data.message;
+    $('#messages').append($('<li>').html(finalMessage));
   })
   // Form submittion with new message in field with id 'm'
   $('form').submit(function () {
