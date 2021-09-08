@@ -52,14 +52,17 @@ myDB(async (client) => {
   let currentUsers = 0;
   io.on('connection', socket => {
     ++currentUsers;
-    io.emit('user', {name: socket.request.user.username, currentUsers, connected: true});
+    io.emit('user', {username: socket.request.user.username, currentUsers, connected: true});
     console.log('user ' + socket.request.user.username + ' connected');
     socket.on('disconnect', () => {
       console.log('A user has disconnected');
       --currentUsers;
-      io.emit('user', {name: socket.request.user.username, currentUsers, connected: false});
+      io.emit('user', {username: socket.request.user.username, currentUsers, connected: false});
     });
   });
+  io.on('chat message', message => {
+    io.emit('chat message', {username: socket.request.username, message});
+  })
 }).catch((e) => {
   app.route('/').get((req, res) => {
     res.render('pug', {
