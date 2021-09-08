@@ -11,8 +11,8 @@ const app = express();
 const http = require('http').createServer(app);
 const io = require('socket.io')(http);
 const passportSocketIo = require('passport.socketio');
-const MongoStore = require('connect-mongo')(session);
 const cookieParser = require('cookie-parser');
+const MongoStore = require('connect-mongo')(session);
 const URI = process.env.MONGO_URI;
 const store = new MongoStore({ url: URI });
 
@@ -34,20 +34,21 @@ app.use(session({
 app.use(passport.initialize());
 app.use(passport.session());
 
+io.use(
+  passportSocketIo.authorize({
+    cookieParser: cookieParser,
+    key: 'express.sid',
+    secret: process.env.SESSION_SECRET,
+    store: store,
+    success: onAuthorizeSuccess,
+    fail: onAuthorizeFail
+  })
+);  
+
 myDB(async (client) => {
   const myDataBase = await client.db('database').collection('users');
   routes(app, myDataBase);
   auth(app, myDataBase);
-  io.use(
-    passportSocketIo.authorize({
-      cookieParser: cookieParser,
-      key: 'express.sid',
-      secret: process.env.SESSION_SECRET,
-      store: store,
-      success: onAuthorizeSuccess,
-      fail: onAuthorizeFail
-    })
-  );  
   let currentUsers = 0;
   io.on('connection', socket => {
     ++currentUsers;
