@@ -54,15 +54,15 @@ myDB(async (client) => {
     ++currentUsers;
     io.emit('user', {username: socket.request.user.username, currentUsers, connected: true});
     console.log('user ' + socket.request.user.username + ' connected');
+    socket.on('chat message', message => {
+      io.emit('chat message', {username: socket.request.username, message});
+    })
     socket.on('disconnect', () => {
       console.log('A user has disconnected');
       --currentUsers;
       io.emit('user', {username: socket.request.user.username, currentUsers, connected: false});
     });
   });
-  io.on('chat message', message => {
-    io.emit('chat message', {username: socket.request.username, message});
-  })
 }).catch((e) => {
   app.route('/').get((req, res) => {
     res.render('pug', {
